@@ -1,6 +1,8 @@
 import json
 from pathlib import Path
 
+from random import randrange
+
 import sc2
 from sc2 import Race, Difficulty
 from sc2.constants import *
@@ -17,14 +19,14 @@ turrets_to_build = 3
 
 workers_to_train = 22
 
-marines_to_train = 10
+marines_to_train = 20
 marines_to_attack = 5
 
 tanks_to_train = 5
 
 cruisers_to_attack = 3
 
-attack_interval = 50
+attack_interval = 10
 
 upgrades = set()
 upgrade_level = 1
@@ -143,7 +145,7 @@ class MyBot(sc2.BotAI):
                 return
        #### ^^^ DEPOTS WALL
 
-        if self.units(BARRACKS).exists and self.can_afford(MARINE) and self.units(MARINE).amount < marines_to_train:
+        if self.units(BARRACKS).ready.exists and self.can_afford(MARINE) and self.units(MARINE).amount < marines_to_train:
             for br in self.units(BARRACKS):
                 if br.noqueue:
                     if not self.can_afford(MARINE):
@@ -154,13 +156,13 @@ class MyBot(sc2.BotAI):
         bunkers = self.units(BUNKER)
         if depo_count >= len(depos) and self.can_afford(BUNKER) and not self.already_pending(BUNKER):
             if bunkers.amount < bunkers_to_build:
-                await self.build(BUNKER, near=depos[bunkers.amount], max_distance=10)
+                await self.build(BUNKER, near=depos[randrange(0, len(depos))], max_distance=5)
                 return
 
         turret_count = self.units(MISSILETURRET).amount
-        if bunkers.amount > turret_count and self.can_afford(MISSILETURRET) and not self.already_pending(MISSILETURRET):
+        if bunkers.amount >= bunkers_to_build and self.can_afford(MISSILETURRET) and not self.already_pending(MISSILETURRET):
             if turret_count < turrets_to_build:
-                await self.build(MISSILETURRET, near=bunkers[turret_count], max_distance=10)
+                await self.build(MISSILETURRET, near=bunkers[randrange(0, bunkers_to_build)], max_distance=5)
                 return
 
         if self.units(MARINE).amount > 0 and self.units(BUNKER).ready.exists and self.units(MARINE).idle.exists:
@@ -226,10 +228,7 @@ class MyBot(sc2.BotAI):
                             await self.chat_send("Woop woop")
                             upgrades.add(RESEARCH_TERRANSTRUCTUREARMORUPGRADE)
                             await self.do(f_bay(RESEARCH_TERRANSTRUCTUREARMORUPGRADE))
-                            return
-
-                        #RESEARCH_TERRANSTRUCTUREARMORUPGRADE
-                        
+                            return                        
 
             f = self.units(FACTORY)
             if not f.exists:
@@ -274,7 +273,8 @@ class MyBot(sc2.BotAI):
                 siege_tanks[s.tag] = 'sieged'
                 return
             elif tank_status == 'sieger':
-                await self.do(s.move(cc.position.towards(self.game_info.map_center, 15).random_on_distance(5)))
+                await self.do(s.move(cc.position.towards(self.game_info.map_center, 15).random_on_distance(5
+)))
                 siege_tanks[s.tag] = 'moving_to_siege'
                 return
             elif tank_status == 'moving_to_siege':

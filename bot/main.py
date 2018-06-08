@@ -142,7 +142,7 @@ class MyBot(sc2.BotAI):
                 return
        #### ^^^ DEPOTS WALL
 
-        if self.units(BARRACKS).exists and self.can_afford(MARINE) and self.units(MARINE).amount < marines_to_train:
+        if self.units(BARRACKS).ready.exists and self.can_afford(MARINE) and self.units(MARINE).amount < marines_to_train:
             for br in self.units(BARRACKS):
                 if br.noqueue:
                     if not self.can_afford(MARINE):

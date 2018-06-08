@@ -200,7 +200,7 @@ class MyBot(sc2.BotAI):
                 await self.do(s(SIEGEMODE_SIEGEMODE))
                 break
             elif tank_status == 'initial':
-                await self.do(s.move(cc.position.towards(self.game_info.map_center, 4).random_on_distance(3)))
+                await self.do(s.move(cc.position.towards(self.game_info.map_center, 6).random_on_distance(5)))
                 siege_tanks[s.tag] = 'moving'
             elif tank_status == 'moving':
                 if s.is_idle:

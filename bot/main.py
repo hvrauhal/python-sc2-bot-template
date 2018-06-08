@@ -252,13 +252,16 @@ class MyBot(sc2.BotAI):
 
             tank_status = siege_tanks.get(s.tag, siege_tank_initial_state)
             if tank_status == 'moved_to_siege':
-                await self.do(s(SIEGEMODE_SIEGEMODE))
-                siege_tanks[s.tag] = 'sieged'
-                return
+                try:
+                    await self.do(s(SIEGEMODE_SIEGEMODE))
+                    siege_tanks[s.tag] = 'sieged'
+                    return
+                except:
+                    print("ERROR from SIEGEMODE_SIEGEMODE")
+                    break
             elif tank_status == 'sieger':
                 await self.do(s.move(cc.position.towards(self.game_info.map_center, 15).random_on_distance(5)))
                 siege_tanks[s.tag] = 'moving_to_siege'
-                return
             elif tank_status == 'moving_to_siege':
                 if s.is_idle:
                     siege_tanks[s.tag] = 'moved_to_siege'

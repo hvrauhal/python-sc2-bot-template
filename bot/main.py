@@ -190,7 +190,7 @@ class MyBot(sc2.BotAI):
 
         if self.units(FACTORY).ready.exists:
             for factory in self.units(FACTORY).ready:
-                if factory.has_add_on and self.can_afford(SIEGETANK) and factory.noqueue and self.units(SIEGETANK).amount < 6:
+                if factory.has_add_on and self.can_afford(SIEGETANK) and factory.noqueue and (self.units(SIEGETANK).amount + self.units(SIEGETANKSIEGED).amount) < 6:
                     await self.do(factory.train(SIEGETANK))
                     break
 

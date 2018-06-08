@@ -8,6 +8,8 @@ from sc2.player import Bot, Computer
 from sc2.player import Human
 from sc2.position import Point2
 
+siege_tanks = {}
+
 bunkers_to_build = 3
 turrets_to_build = 3
 
@@ -168,8 +170,22 @@ class MyBot(sc2.BotAI):
                     await self.do(factory.train(SIEGETANK))
 
         for s in self.units(SIEGETANK):
-            print("Has sieget tank!!!")
-            await self.do(s(SIEGEMODE_SIEGEMODE))
+            tank_status = siege_tanks.get(s.tag, 'initial')
+            if tank_status == 'moved':
+                print("T: Sieging")
+                await self.do(s(SIEGEMODE_SIEGEMODE))
+                break
+            elif tank_status == 'initial':
+                print("T: Initial")
+                await self.do(s.move(cc.position.towards(self.game_info.map_center, 4).random_on_distance(3)))
+                siege_tanks[s.tag] = 'moving'
+            elif tank_status == 'moving':
+                if s.is_idle:
+                    siege_tanks[s.tag] = 'moved'
+                    print("T: Moved")
+                else:
+                    print("T: Moving")
+
 
         for a in self.units(REFINERY):
             if a.assigned_harvesters < a.ideal_harvesters:

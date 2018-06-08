@@ -177,7 +177,7 @@ class MyBot(sc2.BotAI):
         if self.units(SUPPLYDEPOT).exists:
             if not self.units(BARRACKS).exists:
                 if self.can_afford(BARRACKS):
-                    await self.build(BARRACKS, near=cc.position.towards(self.game_info.map_center, 6))
+                    await self.build(BARRACKS, near=cc.position.towards(self.game_info.map_center, 10))
                     return
 
             elif self.units(BARRACKS).exists and self.units(REFINERY).amount < 2:
@@ -195,10 +195,10 @@ class MyBot(sc2.BotAI):
                         return
 
             f = self.units(ENGINEERINGBAY)
-            if not f.exists:
+            if not f.exists and self.units(BARRACKS).exists:
                 print("No engineering bay")
                 if self.can_afford(ENGINEERINGBAY) and self.already_pending(ENGINEERINGBAY) < 1:
-                    await self.build(ENGINEERINGBAY, near=cc.position.towards(self.game_info.map_center, 8))
+                    await self.build(ENGINEERINGBAY, near=cc.position.towards(self.game_info.map_center, 10))
                     return
             elif f.ready.exists:
                 # Ugly hack for upgrading with only one engineering bay
@@ -229,7 +229,7 @@ class MyBot(sc2.BotAI):
                             await self.chat_send("Woop woop")
                             upgrades.add(RESEARCH_TERRANSTRUCTUREARMORUPGRADE)
                             await self.do(f_bay(RESEARCH_TERRANSTRUCTUREARMORUPGRADE))
-                            return                        
+                            return
 
             f = self.units(FACTORY)
             if not f.exists:

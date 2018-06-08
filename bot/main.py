@@ -26,6 +26,9 @@ cruisers_to_attack = 3
 
 attack_interval = 50
 
+upgrades = set()
+upgrade_level = 1
+
 class MyBot(sc2.BotAI):
     with open(Path(__file__).parent / "../botinfo.json") as f:
         NAME = json.load(f)["name"]
@@ -190,9 +193,44 @@ class MyBot(sc2.BotAI):
 
             f = self.units(ENGINEERINGBAY)
             if not f.exists:
+                print("No engineering bay")
                 if self.can_afford(ENGINEERINGBAY) and self.already_pending(ENGINEERINGBAY) < 1:
                     await self.build(ENGINEERINGBAY, near=cc.position.towards(self.game_info.map_center, 8))
                     return
+            elif f.ready.exists:
+                # Ugly hack for upgrading with only one engineering bay
+                for f_bay in f:
+                    global upgrade_level
+                    global upgrades
+                    if upgrade_level == 1:
+                        if self.can_afford(ENGINEERINGBAYRESEARCH_TERRANINFANTRYWEAPONSLEVEL1) and ENGINEERINGBAYRESEARCH_TERRANINFANTRYWEAPONSLEVEL1 not in upgrades:
+                            print("Upgrading weapons")
+                            await self.chat_send("RAWR")
+                            upgrades.add(ENGINEERINGBAYRESEARCH_TERRANINFANTRYWEAPONSLEVEL1)
+                            await self.do(f_bay(ENGINEERINGBAYRESEARCH_TERRANINFANTRYWEAPONSLEVEL1))
+                            return
+                        if self.can_afford(ENGINEERINGBAYRESEARCH_TERRANINFANTRYARMORLEVEL1) and ENGINEERINGBAYRESEARCH_TERRANINFANTRYARMORLEVEL1 not in upgrades:
+                            print("Booyeah!")
+                            await self.chat_send("Booyeah!")
+                            upgrades.add(ENGINEERINGBAYRESEARCH_TERRANINFANTRYARMORLEVEL1)
+                            await self.do(f_bay(ENGINEERINGBAYRESEARCH_TERRANINFANTRYARMORLEVEL1))
+                            return
+                        if self.can_afford(RESEARCH_HISECAUTOTRACKING) and RESEARCH_HISECAUTOTRACKING not in upgrades:
+                            print("Awww yeah")
+                            await self.chat_send("Aww yeah")
+                            upgrades.add(RESEARCH_HISECAUTOTRACKING)
+                            await self.do(f_bay(RESEARCH_HISECAUTOTRACKING))
+                            return
+                        if self.can_afford(RESEARCH_TERRANSTRUCTUREARMORUPGRADE) and RESEARCH_TERRANSTRUCTUREARMORUPGRADE not in upgrades:
+                            print("Woop woop")
+                            await self.chat_send("Woop woop")
+                            upgrades.add(RESEARCH_TERRANSTRUCTUREARMORUPGRADE)
+                            await self.do(f_bay(RESEARCH_TERRANSTRUCTUREARMORUPGRADE))
+                            return
+
+                        #RESEARCH_TERRANSTRUCTUREARMORUPGRADE
+                        
+
             f = self.units(FACTORY)
             if not f.exists:
                 if self.can_afford(FACTORY) and self.already_pending(FACTORY) < 1:

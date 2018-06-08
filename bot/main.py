@@ -58,6 +58,14 @@ class MyBot(sc2.BotAI):
         if self.can_afford(SCV) and self.workers.amount < 22 and cc.noqueue:
             await self.do(cc.train(SCV))
 
+
+        ## Repair broken structures
+        for structure in self.units().structure.ready: 
+            if structure.health < structure.health_max:
+                scv = len(self.units(SCV)) > 0 and self.units(SCV)[0]
+                if scv:
+                    await self.do(scv(EFFECT_REPAIR, structure))
+
         if self.units(FUSIONCORE).exists and self.can_afford(BATTLECRUISER):
             for sp in self.units(STARPORT):
                 if sp.has_add_on and sp.noqueue:
@@ -95,6 +103,7 @@ class MyBot(sc2.BotAI):
                 await self.build(SUPPLYDEPOT, near=depos_to_build[0], max_distance=2, placement_step=1)
             elif self.supply_left < 3:
                 await self.build(SUPPLYDEPOT, near=cc.position.towards(self.game_info.map_center, 8))
+                return
        #### ^^^ DEPOTS WALL
 
         if self.units(BARRACKS).exists and self.can_afford(MARINE) and self.units(MARINE).amount < 10:
@@ -107,12 +116,12 @@ class MyBot(sc2.BotAI):
         bunkers = self.units(BUNKER)
         if depo_count >= len(depos) and self.can_afford(BUNKER) and not self.already_pending(BUNKER):
             if bunkers.amount < bunkers_to_build:
-                await self.build(BUNKER, near=depos[bunkers.amount], max_distance=5)
+                await self.build(BUNKER, near=depos[bunkers.amount], max_distance=10)
 
         turret_count = self.units(MISSILETURRET).amount
         if bunkers.amount > turret_count and self.can_afford(MISSILETURRET) and not self.already_pending(MISSILETURRET):
             if turret_count < turrets_to_build:
-                await self.build(MISSILETURRET, near=bunkers[turret_count], max_distance=5)
+                await self.build(MISSILETURRET, near=bunkers[turret_count], max_distance=10)
 
         if self.units(MARINE).amount > 0 and self.units(BUNKER).ready.exists and self.units(MARINE).idle.exists:
             bunkers = self.units(BUNKER).ready
@@ -121,8 +130,17 @@ class MyBot(sc2.BotAI):
                 if bunker._proto.cargo_space_taken < bunker._proto.cargo_space_max:
                     await self.do(bunkers[0](LOAD_BUNKER, idle_marine))
 
+        if self.units(MARINE).idle.amount >= 5:
+            target = self.select_target()
+            forces = self.units(MARINE)
+            if (iteration//30) % 10 == 0:
+                for unit in forces:
+                    await self.do(unit.attack(target))
+            else:
+                for unit in forces.idle:
+                    await self.do(unit.attack(target))
+
         if self.units(SUPPLYDEPOT).exists:
-            print("SUPPLYDEPOT exists")
             if not self.units(BARRACKS).exists:
                 if self.can_afford(BARRACKS):
                     await self.build(BARRACKS, near=cc.position.towards(self.game_info.map_center, 6))
@@ -148,18 +166,14 @@ class MyBot(sc2.BotAI):
             f = self.units(FACTORY)
             if not f.exists:
                 if self.can_afford(FACTORY) and self.already_pending(FACTORY) < 1:
-                    print("Building initial factory")
                     await self.build(FACTORY, near=cc.position.random_on_distance(10))
             elif f.ready.exists:
-                print("some FACTORY ready and exists")
                 if self.can_afford(FACTORYTECHLAB) and not self.already_pending(FACTORYTECHLAB):
-                    print("Can afford FACTORYTECHLAB and its not already pending")
                     for factory in self.units(FACTORY).ready:
-                        print("FACTORY is ready within loop", factory.tag)
                         if factory.add_on_tag == 0:
-                            print("FACTORY has no addons, so BUILDING FACTORYTECHLAB")
+                            print("NOW BUILDING THE FACTORYTECHLAB FOR REAL!!!!")
                             await self.do(factory.build(FACTORYTECHLAB))
-                            break
+                            return
 
             if self.units(STARPORT).amount < 2 and self.already_pending(STARPORT) < 2:
                 if self.can_afford(STARPORT):
@@ -175,28 +189,21 @@ class MyBot(sc2.BotAI):
 
         if self.units(FACTORY).ready.exists:
             for factory in self.units(FACTORY).ready:
-                if factory.has_add_on and self.can_afford(SIEGETANK) and factory.noqueue and self.units(SIEGETANK).amount < 6:
-                    print("Training siegetank")
+                if factory.has_add_on and self.can_afford(SIEGETANK) and factory.noqueue and (self.units(SIEGETANK).amount + self.units(SIEGETANKSIEGED).amount) < 6:
                     await self.do(factory.train(SIEGETANK))
                     break
 
         for s in self.units(SIEGETANK):
             tank_status = siege_tanks.get(s.tag, 'initial')
             if tank_status == 'moved':
-                print("T: Sieging")
                 await self.do(s(SIEGEMODE_SIEGEMODE))
                 break
             elif tank_status == 'initial':
-                print("T: Initial")
-                await self.do(s.move(cc.position.towards(self.game_info.map_center, 4).random_on_distance(3)))
+                await self.do(s.move(cc.position.towards(self.game_info.map_center, 6).random_on_distance(5)))
                 siege_tanks[s.tag] = 'moving'
             elif tank_status == 'moving':
                 if s.is_idle:
                     siege_tanks[s.tag] = 'moved'
-                    print("T: Moved")
-                else:
-                    print("T: Moving")
-
 
         for a in self.units(REFINERY):
             if a.assigned_harvesters < a.ideal_harvesters:

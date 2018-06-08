@@ -60,13 +60,6 @@ class MyBot(sc2.BotAI):
                         break
                     await self.do(sp.train(BATTLECRUISER))
 
-        if iteration % 3 == 0 and self.units(BARRACKS).exists and self.can_afford(MARINE) and self.units(BARRACKS).amount < 10:
-            for br in self.units(BARRACKS):
-                if br.noqueue:
-                    if not self.can_afford(MARINE):
-                        break
-                    await self.do(br.train(MARINE))
-
         #### RAMP WALL:
         # Raise depos when enemies are nearby
         for depo in self.units(SUPPLYDEPOT).ready:
@@ -89,6 +82,7 @@ class MyBot(sc2.BotAI):
         ]
 
         depo_count = (self.units(SUPPLYDEPOT) | self.units(SUPPLYDEPOTLOWERED)).amount
+        bunker_count = self.units(BUNKER).amount
 
         if self.can_afford(SUPPLYDEPOT) and not self.already_pending(SUPPLYDEPOT):
             if depo_count < len(depos):
@@ -96,7 +90,24 @@ class MyBot(sc2.BotAI):
                 await self.build(SUPPLYDEPOT, near=depo, max_distance=2, placement_step=1)
             elif self.supply_left < 3:
                 await self.build(SUPPLYDEPOT, near=cc.position.towards(self.game_info.map_center, 8))
+
+        if depo_count >= len(depos) and self.can_afford(BUNKER) and not self.already_pending(BUNKER):
+            if bunker_count < 2:
+                await self.build(BUNKER, near=depos[bunker_count], max_distance=5)
         #### ^^^ DEPOTS WALL
+
+        if iteration % 3 == 0 and self.units(BARRACKS).exists and self.can_afford(MARINE) and self.units(MARINE).amount < 10:
+            for br in self.units(BARRACKS):
+                if br.noqueue:
+                    if not self.can_afford(MARINE):
+                        break
+                    await self.do(br.train(MARINE))
+
+        if self.units(MARINE).amount > 0 and self.units(BUNKER).ready.exists:
+            forces = self.units(MARINE)
+            bunkers = self.units(BUNKER).ready
+            for unit in forces.idle:
+                await self.do(unit.move(bunkers[0]))
 
         if self.units(SUPPLYDEPOT).exists:
             if not self.units(BARRACKS).exists:

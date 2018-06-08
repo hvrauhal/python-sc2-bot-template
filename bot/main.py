@@ -19,7 +19,7 @@ turrets_to_build = 3
 
 workers_to_train = 22
 
-marines_to_train = 10
+marines_to_train = 20
 marines_to_attack = 5
 
 tanks_to_train = 5

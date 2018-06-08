@@ -236,7 +236,7 @@ class MyBot(sc2.BotAI):
                 siege_tanks[s.tag] = 'sieged'
                 return
             elif tank_status == 'sieger':
-                await self.do(s.move(cc.position.towards(self.game_info.map_center, 15).random_on_distance(5)))
+                await self.do(s.move(near=depos[1], max_distance=20))
                 siege_tanks[s.tag] = 'moving_to_siege'
                 return
             elif tank_status == 'moving_to_siege':

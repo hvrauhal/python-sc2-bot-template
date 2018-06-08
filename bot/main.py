@@ -112,7 +112,7 @@ class MyBot(sc2.BotAI):
         if self.units(SUPPLYDEPOT).exists:
             if not self.units(BARRACKS).exists:
                 if self.can_afford(BARRACKS):
-                    await self.build(BARRACKS, near=cc.position.towards(self.game_info.map_center, 8))
+                    await self.build(BARRACKS, near=cc.position.towards(self.game_info.map_center, 6))
 
             elif self.units(BARRACKS).exists and self.units(REFINERY).amount < 2:
                 if self.can_afford(REFINERY):
@@ -128,20 +128,19 @@ class MyBot(sc2.BotAI):
                         await self.do(worker.build(REFINERY, vg))
                         break
 
-            if self.units(BARRACKS).ready.exists:
-                f = self.units(FACTORY)
-                if not f.exists:
-                    if self.can_afford(FACTORY) and self.already_pending(FACTORY) < 1:
-                        await self.build(FACTORY, near=cc.position.towards(self.game_info.map_center, 8).random_on_distance(8))
-                elif f.ready.exists:
-                    if self.can_afford(FACTORYTECHLAB):
-                        for factory in self.units(FACTORY).ready:
-                            if factory.add_on_tag == 0:
-                                await self.do(factory.build(FACTORYTECHLAB))
+            f = self.units(FACTORY)
+            if not f.exists:
+                if self.can_afford(FACTORY) and self.already_pending(FACTORY) < 1:
+                    await self.build(FACTORY, near=cc.position.towards(self.game_info.map_center, 8).random_on_distance(4))
+            elif f.ready.exists:
+                if self.can_afford(FACTORYTECHLAB):
+                    for factory in self.units(FACTORY).ready:
+                        if factory.add_on_tag == 0:
+                            await self.do(factory.build(FACTORYTECHLAB))
 
-                if self.units(STARPORT).amount < 2 and self.already_pending(STARPORT) < 2:
-                    if self.can_afford(STARPORT):
-                        await self.build(STARPORT, near=cc.position.towards(self.game_info.map_center, 6).random_on_distance(8))
+            if self.units(STARPORT).amount < 2 and self.already_pending(STARPORT) < 2:
+                if self.can_afford(STARPORT):
+                    await self.build(STARPORT, near=cc.position.towards(self.game_info.map_center, 6).random_on_distance(4))
 
         for sp in self.units(STARPORT).ready:
             if sp.add_on_tag == 0:

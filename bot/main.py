@@ -44,7 +44,6 @@ class MyBot(sc2.BotAI):
         else:
             cc = cc.first
 
-
         if iteration % 50 == 0 and self.units(BATTLECRUISER).amount > 2:
             target = self.select_target()
             forces = self.units(BATTLECRUISER)
@@ -59,7 +58,7 @@ class MyBot(sc2.BotAI):
             await self.do(cc.train(SCV))
 
 
-        ## Repair broken structures
+        ## Repair borken structures
         for structure in self.units().structure.ready: 
             if structure.health < structure.health_max:
                 scv = len(self.units(SCV)) > 0 and self.units(SCV)[0]
@@ -197,6 +196,7 @@ class MyBot(sc2.BotAI):
             tank_status = siege_tanks.get(s.tag, 'initial')
             if tank_status == 'moved':
                 await self.do(s(SIEGEMODE_SIEGEMODE))
+                siege_tanks[s.tag] = 'sieged'
                 break
             elif tank_status == 'initial':
                 await self.do(s.move(cc.position.towards(self.game_info.map_center, 6).random_on_distance(5)))

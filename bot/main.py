@@ -137,7 +137,7 @@ class MyBot(sc2.BotAI):
                     if self.can_afford(FACTORYTECHLAB):
                         for factory in self.units(FACTORY).ready:
                             if factory.add_on_tag == 0:
-                                await self.do(factory.build(FACTORYTECHLAB))
+                                await self.do(factory.build(FACTORYTECHLAB, near=factory, max_distance=10, placement_step=1))
                     
                     if self.units(STARPORT).amount < 2 and self.already_pending(STARPORT) < 2:
                         if self.can_afford(STARPORT):

@@ -82,6 +82,13 @@ celerybeat-schedule
 # dotenv
 .env
 
+# idea
+.idea/
+*.iml
+
+# SC2
+test.SC2Replay
+
 # virtualenv
 .venv
 venv/

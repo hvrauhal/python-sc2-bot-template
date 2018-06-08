@@ -120,7 +120,7 @@ class MyBot(sc2.BotAI):
             if self.units(BARRACKS).ready.exists:
                 f = self.units(FACTORY)
                 if not f.exists:
-                    if self.can_afford(FACTORY):
+                    if self.can_afford(FACTORY) and self.already_pending(FACTORY) < 1:
                         await self.build(FACTORY, near=cc.position.towards(self.game_info.map_center, 8))
                 elif f.ready.exists:
                     if self.can_afford(FACTORYTECHLAB):
@@ -128,9 +128,9 @@ class MyBot(sc2.BotAI):
                             if factory.add_on_tag == 0:
                                 await self.do(factory.build(FACTORYTECHLAB))
                     
-                    if self.units(STARPORT).amount < 2:
+                    if self.units(STARPORT).amount < 2 and self.already_pending(FACTORY) < 2:
                         if self.can_afford(STARPORT):
-                            await self.build(STARPORT, near=cc.position.towards(self.game_info.map_center, 10))
+                            await self.build(STARPORT, near=cc.position.towards(self.game_info.map_center, 10).random_on_distance(8))
 
         for sp in self.units(STARPORT).ready:
             if sp.add_on_tag == 0:

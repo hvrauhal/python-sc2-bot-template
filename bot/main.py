@@ -123,6 +123,7 @@ class MyBot(sc2.BotAI):
                     await self.do(bunkers[0](LOAD_BUNKER, idle_marine))
 
         if self.units(SUPPLYDEPOT).exists:
+            print("SUPPLYDEPOT exists")
             if not self.units(BARRACKS).exists:
                 if self.can_afford(BARRACKS):
                     await self.build(BARRACKS, near=cc.position.towards(self.game_info.map_center, 6))
@@ -148,11 +149,16 @@ class MyBot(sc2.BotAI):
             f = self.units(FACTORY)
             if not f.exists:
                 if self.can_afford(FACTORY) and self.already_pending(FACTORY) < 1:
-                    await self.build(FACTORY, near=cc.position.towards(self.game_info.map_center, 8).random_on_distance(4))
+                    print("Building initial factory")
+                    await self.build(FACTORY, near=cc.position.random_on_distance(4))
             elif f.ready.exists:
-                if self.can_afford(FACTORYTECHLAB):
+                print("some FACTORY ready and exists")
+                if self.can_afford(FACTORYTECHLAB) and not self.already_pending(FACTORYTECHLAB):
+                    print("Can afford FACTORYTECHLAB and its not already pending")
                     for factory in self.units(FACTORY).ready:
+                        print("FACTORY is ready within loop", factory.tag)
                         if factory.add_on_tag == 0:
+                            print("FACTORY has no addons, so BUILDING FACTORYTECHLAB")
                             await self.do(factory.build(FACTORYTECHLAB))
                             break
 
@@ -171,6 +177,7 @@ class MyBot(sc2.BotAI):
         if self.units(FACTORY).ready.exists:
             for factory in self.units(FACTORY).ready:
                 if factory.has_add_on and self.can_afford(SIEGETANK) and factory.noqueue and self.units(SIEGETANK).amount < 6:
+                    print("Training siegetank")
                     await self.do(factory.train(SIEGETANK))
                     break
 

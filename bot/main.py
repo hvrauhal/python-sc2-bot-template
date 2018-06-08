@@ -190,11 +190,11 @@ class MyBot(sc2.BotAI):
                         await self.do(worker.build(REFINERY, vg))
                         return
 
-            f = self.units(ENGINEERINGBAY)
-            if not f.exists:
+            elif self.units(BARRACKS).exists and self.units(ENGINEERINGBAY).amount < 1:
                 if self.can_afford(ENGINEERINGBAY) and self.already_pending(ENGINEERINGBAY) < 1:
                     await self.build(ENGINEERINGBAY, near=cc.position.towards(self.game_info.map_center, 8))
                     return
+
             f = self.units(FACTORY)
             if not f.exists:
                 if self.can_afford(FACTORY) and self.already_pending(FACTORY) < 1:

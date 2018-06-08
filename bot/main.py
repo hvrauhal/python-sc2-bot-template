@@ -156,6 +156,10 @@ class MyBot(sc2.BotAI):
                 if factory.has_add_on and self.can_afford(SIEGETANK) and factory.noqueue and self.units(SIEGETANK).amount < 6:
                     await self.do(factory.train(SIEGETANK))
 
+        for s in self.units(SIEGETANK):
+            print("Has sieget tank!!!")
+            await self.do(s(SIEGEMODE_SIEGEMODE))
+
         for a in self.units(REFINERY):
             if a.assigned_harvesters < a.ideal_harvesters:
                 w = self.workers.closer_than(20, a)

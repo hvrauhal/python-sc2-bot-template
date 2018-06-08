@@ -112,12 +112,12 @@ class MyBot(sc2.BotAI):
             if turret_count < turrets_to_build:
                 await self.build(MISSILETURRET, near=bunkers[turret_count], max_distance=5)
 
-        if self.units(MARINE).amount > 0 and self.units(BUNKER).ready.exists:
-            forces = self.units(MARINE)
+        if self.units(MARINE).amount > 0 and self.units(BUNKER).ready.exists and self.units(MARINE).idle.exists:
             bunkers = self.units(BUNKER).ready
-            for marine in forces.idle:
-                await self.do(bunkers[0](LOAD_BUNKER, marine))
-                break
+            idle_marine = self.units(MARINE).idle.first
+            for bunker in bunkers.idle:
+                if bunker._proto.cargo_space_taken < bunker._proto.cargo_space_max:
+                    await self.do(bunkers[0](LOAD_BUNKER, idle_marine))
 
         if self.units(SUPPLYDEPOT).exists:
             if not self.units(BARRACKS).exists:

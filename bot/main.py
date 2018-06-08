@@ -108,12 +108,12 @@ class MyBot(sc2.BotAI):
         bunkers = self.units(BUNKER)
         if depo_count >= len(depos) and self.can_afford(BUNKER) and not self.already_pending(BUNKER):
             if bunkers.amount < bunkers_to_build:
-                await self.build(BUNKER, near=depos[bunkers.amount], max_distance=5)
+                await self.build(BUNKER, near=depos[bunkers.amount], max_distance=10)
 
         turret_count = self.units(MISSILETURRET).amount
         if bunkers.amount > turret_count and self.can_afford(MISSILETURRET) and not self.already_pending(MISSILETURRET):
             if turret_count < turrets_to_build:
-                await self.build(MISSILETURRET, near=bunkers[turret_count], max_distance=5)
+                await self.build(MISSILETURRET, near=bunkers[turret_count], max_distance=10)
 
         if self.units(MARINE).amount > 0 and self.units(BUNKER).ready.exists and self.units(MARINE).idle.exists:
             bunkers = self.units(BUNKER).ready

@@ -13,6 +13,17 @@ siege_tanks = {}
 bunkers_to_build = 3
 turrets_to_build = 3
 
+workers_to_train = 22
+
+marines_to_train = 10
+marines_to_attack = 5
+
+tanks_to_train = 5
+
+cruisers_to_attack = 3
+
+attack_interval = 50
+
 class MyBot(sc2.BotAI):
     with open(Path(__file__).parent / "../botinfo.json") as f:
         NAME = json.load(f)["name"]
@@ -26,7 +37,7 @@ class MyBot(sc2.BotAI):
         if target.exists:
             return target.random.position
 
-        if min([u.position.distance_to(self.enemy_start_locations[0]) for u in self.units]) < 5:
+        if min([u.position.distance_to(self.enemy_start_locations[0]) for u in self.units]) < 10:
             return self.enemy_start_locations[0].position
 
         return self.state.mineral_field.random.position
@@ -44,22 +55,36 @@ class MyBot(sc2.BotAI):
         else:
             cc = cc.first
 
-        if iteration % 50 == 0 and self.units(BATTLECRUISER).amount > 2:
+        if iteration % attack_interval == 0:
             target = self.select_target()
-            forces = self.units(BATTLECRUISER)
-            if (iteration//50) % 10 == 0:
-                for unit in forces:
-                    await self.do(unit.attack(target))
-            else:
-                for unit in forces.idle:
-                    await self.do(unit.attack(target))
+            attacking = False
+            attackWithAll = (iteration//attack_interval) % 10 == 0
+            if self.units(MARINE).amount >= marines_to_attack:
+                forces = self.units(MARINE)
+                attacking = True
+                if attackWithAll:
+                    for unit in forces:
+                        await self.do(unit.attack(target))
+                else:
+                    for unit in forces.idle:
+                        await self.do(unit.attack(target))
+            if attacking | self.units(BATTLECRUISER).amount >= cruisers_to_attack:
+                forces = self.units(BATTLECRUISER)
+                if attackWithAll:
+                    for unit in forces:
+                        await self.do(unit.attack(target))
+                else:
+                    for unit in forces.idle:
+                        await self.do(unit.attack(target))
+            if attacking:
+                return
 
-        if self.can_afford(SCV) and self.workers.amount < 22 and cc.noqueue:
+        if self.can_afford(SCV) and self.workers.amount < workers_to_train and cc.noqueue:
             await self.do(cc.train(SCV))
 
 
-        ## Repair borken structures
-        for structure in self.units().structure.ready: 
+        ## Repair broken structures
+        for structure in self.units().structure.ready:
             if structure.health < structure.health_max:
                 scv = len(self.units(SCV)) > 0 and self.units(SCV)[0]
                 if scv:
@@ -100,12 +125,12 @@ class MyBot(sc2.BotAI):
             depos_to_build = list(filter(lambda x: x not in depo_pos, depos))
             if len(depos_to_build) > 0:
                 await self.build(SUPPLYDEPOT, near=depos_to_build[0], max_distance=2, placement_step=1)
-            elif self.supply_left < 3:
+            elif self.supply_left < 5:
                 await self.build(SUPPLYDEPOT, near=cc.position.towards(self.game_info.map_center, 8))
                 return
        #### ^^^ DEPOTS WALL
 
-        if self.units(BARRACKS).exists and self.can_afford(MARINE) and self.units(MARINE).amount < 10:
+        if self.units(BARRACKS).exists and self.can_afford(MARINE) and self.units(MARINE).amount < marines_to_train:
             for br in self.units(BARRACKS):
                 if br.noqueue:
                     if not self.can_afford(MARINE):
@@ -128,16 +153,6 @@ class MyBot(sc2.BotAI):
             for bunker in bunkers.idle:
                 if bunker._proto.cargo_space_taken < bunker._proto.cargo_space_max:
                     await self.do(bunkers[0](LOAD_BUNKER, idle_marine))
-
-        if self.units(MARINE).idle.amount >= 5:
-            target = self.select_target()
-            forces = self.units(MARINE)
-            if (iteration//30) % 10 == 0:
-                for unit in forces:
-                    await self.do(unit.attack(target))
-            else:
-                for unit in forces.idle:
-                    await self.do(unit.attack(target))
 
         if self.units(SUPPLYDEPOT).exists:
             if not self.units(BARRACKS).exists:
@@ -188,7 +203,7 @@ class MyBot(sc2.BotAI):
 
         if self.units(FACTORY).ready.exists:
             for factory in self.units(FACTORY).ready:
-                if factory.has_add_on and self.can_afford(SIEGETANK) and factory.noqueue and (self.units(SIEGETANK).amount + self.units(SIEGETANKSIEGED).amount) < 6:
+                if factory.has_add_on and self.can_afford(SIEGETANK) and factory.noqueue and (self.units(SIEGETANK).amount + self.units(SIEGETANKSIEGED).amount) < tanks_to_train:
                     await self.do(factory.train(SIEGETANK))
                     break
 

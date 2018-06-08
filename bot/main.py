@@ -130,7 +130,7 @@ class MyBot(sc2.BotAI):
                     
                     if self.units(STARPORT).amount < 2:
                         if self.can_afford(STARPORT):
-                            await self.build(STARPORT, near=cc.position.towards(self.game_info.map_center, 30).random_on_distance(8))
+                            await self.build(STARPORT, near=cc.position.towards(self.game_info.map_center, 10))
 
         for sp in self.units(STARPORT).ready:
             if sp.add_on_tag == 0:

@@ -89,11 +89,10 @@ class MyBot(sc2.BotAI):
         depo_count = (self.units(SUPPLYDEPOT) | self.units(SUPPLYDEPOTLOWERED)).amount
         if self.can_afford(SUPPLYDEPOT) and not self.already_pending(SUPPLYDEPOT):
             # (x, y) positions of all existing supply depots
-            existing_walls = list(map(lambda x: (int(x.position[0]), int(x.position[1])), self.units(SUPPLYDEPOT) | self.units(SUPPLYDEPOTLOWERED)))
-            if len(existing_walls) < len(depos):
-                depos_to_build = list(filter(lambda x: x not in existing_walls, depos))
-                if len(depos_to_build) > 0:
-                    await self.build(SUPPLYDEPOT, near=depos_to_build[0], max_distance=2, placement_step=1)
+            depo_pos = list(map(lambda x: (int(x.position[0]), int(x.position[1])), self.units(SUPPLYDEPOT) | self.units(SUPPLYDEPOTLOWERED)))
+            depos_to_build = list(filter(lambda x: x not in depo_pos, depos))
+            if len(depos_to_build) > 0:
+                await self.build(SUPPLYDEPOT, near=depos_to_build[0], max_distance=2, placement_step=1)
             elif self.supply_left < 3:
                 await self.build(SUPPLYDEPOT, near=cc.position.towards(self.game_info.map_center, 8))
        #### ^^^ DEPOTS WALL

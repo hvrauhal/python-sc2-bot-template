@@ -234,7 +234,15 @@ class MyBot(sc2.BotAI):
             f = self.units(FACTORY)
             if not f.exists:
                 if self.can_afford(FACTORY) and self.already_pending(FACTORY) < 1:
-                    await self.build(FACTORY, near=cc.position.random_on_distance(12))
+                    async def techlabfits(pos):
+                        print(max(pos.neighbors8))
+                        return await self.can_place(SUPPLYDEPOT, max(pos.neighbors8))
+
+                    pos = cc.position.random_on_distance(10)
+                    while not await techlabfits(pos):
+                        pos = cc.position.random_on_distance(10)
+ 
+                    await self.build(FACTORY, near=pos)
                     return
             elif f.ready.exists:
                 if self.can_afford(FACTORYTECHLAB) and not self.already_pending(FACTORYTECHLAB):

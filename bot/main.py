@@ -151,6 +151,7 @@ class MyBot(sc2.BotAI):
                     for factory in self.units(FACTORY).ready:
                         if factory.add_on_tag == 0:
                             await self.do(factory.build(FACTORYTECHLAB))
+                            break
 
             if self.units(STARPORT).amount < 2 and self.already_pending(STARPORT) < 2:
                 if self.can_afford(STARPORT):
@@ -168,6 +169,7 @@ class MyBot(sc2.BotAI):
             for factory in self.units(FACTORY).ready:
                 if factory.has_add_on and self.can_afford(SIEGETANK) and factory.noqueue and self.units(SIEGETANK).amount < 6:
                     await self.do(factory.train(SIEGETANK))
+                    break
 
         for s in self.units(SIEGETANK):
             tank_status = siege_tanks.get(s.tag, 'initial')

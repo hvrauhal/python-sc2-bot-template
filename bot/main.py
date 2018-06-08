@@ -33,7 +33,7 @@ class MyBot(sc2.BotAI):
         cc = (self.units(COMMANDCENTER) | self.units(ORBITALCOMMAND))
         if not cc.exists:
             target = self.known_enemy_structures.random_or(self.enemy_start_locations[0]).position
-            for unit in self.workers | self.units(BATTLECRUISER):
+            for unit in self.workers | self.units(BATTLECRUISER) | self.units(MARINE):
                 await self.do(unit.attack(target))
             return
         else:
@@ -60,6 +60,12 @@ class MyBot(sc2.BotAI):
                         break
                     await self.do(sp.train(BATTLECRUISER))
 
+        if iteration % 3 == 0 and self.units(BARRACKS).exists and self.can_afford(MARINE) and self.units(BARRACKS).amount < 10:
+            for br in self.units(BARRACKS):
+                if br.noqueue:
+                    if not self.can_afford(MARINE):
+                        break
+                    await self.do(br.train(MARINE))
 
         #### RAMP WALL:
         # Raise depos when enemies are nearby

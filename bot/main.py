@@ -8,6 +8,9 @@ from sc2.player import Bot, Computer
 from sc2.player import Human
 from sc2.position import Point2
 
+bunkers_to_build = 3
+turrets_to_build = 3
+
 class MyBot(sc2.BotAI):
     with open(Path(__file__).parent / "../botinfo.json") as f:
         NAME = json.load(f)["name"]
@@ -82,19 +85,13 @@ class MyBot(sc2.BotAI):
         ]
 
         depo_count = (self.units(SUPPLYDEPOT) | self.units(SUPPLYDEPOTLOWERED)).amount
-        bunker_count = self.units(BUNKER).amount
-
         if self.can_afford(SUPPLYDEPOT) and not self.already_pending(SUPPLYDEPOT):
             if depo_count < len(depos):
                 depo = list(depos)[depo_count]
                 await self.build(SUPPLYDEPOT, near=depo, max_distance=2, placement_step=1)
             elif self.supply_left < 3:
                 await self.build(SUPPLYDEPOT, near=cc.position.towards(self.game_info.map_center, 8))
-
-        if depo_count >= len(depos) and self.can_afford(BUNKER) and not self.already_pending(BUNKER):
-            if bunker_count < 2:
-                await self.build(BUNKER, near=depos[bunker_count], max_distance=5)
-        #### ^^^ DEPOTS WALL
+       #### ^^^ DEPOTS WALL
 
         if self.units(BARRACKS).exists and self.can_afford(MARINE) and self.units(MARINE).amount < 10:
             for br in self.units(BARRACKS):
@@ -103,11 +100,22 @@ class MyBot(sc2.BotAI):
                         break
                     await self.do(br.train(MARINE))
 
+        bunkers = self.units(BUNKER)
+        if depo_count >= len(depos) and self.can_afford(BUNKER) and not self.already_pending(BUNKER):
+            if bunkers.amount < bunkers_to_build:
+                await self.build(BUNKER, near=depos[bunkers.amount], max_distance=5)
+
+        turret_count = self.units(MISSILETURRET).amount
+        if bunkers.amount > turret_count and self.can_afford(MISSILETURRET) and not self.already_pending(MISSILETURRET):
+            if turret_count < turrets_to_build:
+                await self.build(MISSILETURRET, near=bunkers[turret_count], max_distance=5)
+
         if self.units(MARINE).amount > 0 and self.units(BUNKER).ready.exists:
             forces = self.units(MARINE)
             bunkers = self.units(BUNKER).ready
             for marine in forces.idle:
                 await self.do(bunkers[0](LOAD_BUNKER, marine))
+                break
 
         if self.units(SUPPLYDEPOT).exists:
             if not self.units(BARRACKS).exists:
@@ -128,6 +136,10 @@ class MyBot(sc2.BotAI):
                         await self.do(worker.build(REFINERY, vg))
                         break
 
+            f = self.units(ENGINEERINGBAY)
+            if not f.exists:
+                if self.can_afford(ENGINEERINGBAY) and self.already_pending(ENGINEERINGBAY) < 1:
+                    await self.build(ENGINEERINGBAY, near=cc.position.towards(self.game_info.map_center, 8))
             f = self.units(FACTORY)
             if not f.exists:
                 if self.can_afford(FACTORY) and self.already_pending(FACTORY) < 1:

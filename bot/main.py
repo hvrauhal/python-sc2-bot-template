@@ -80,6 +80,7 @@ class MyBot(sc2.BotAI):
                 if attackWithAll:
                     for unit in forces:
                         await self.do(unit.attack(target))
+                        await self.chat_send("Boom boom boom, battle cruisers coming in!")
                 else:
                     for unit in forces.idle:
                         await self.do(unit.attack(target))
@@ -109,7 +110,6 @@ class MyBot(sc2.BotAI):
                     if not self.can_afford(BATTLECRUISER):
                         break
                     await self.do(sp.train(BATTLECRUISER))
-                    await self.chat_send("Boom boom boom, battle cruisers coming in!")
                     return
 
         #### RAMP WALL:

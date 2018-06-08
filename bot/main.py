@@ -62,7 +62,7 @@ class MyBot(sc2.BotAI):
         ## Repair broken structures
         for structure in self.units().structure.ready: 
             if structure.health < structure.health_max:
-                scv = self.units(SCV).idle[0]
+                scv = len(self.units(SCV)) > 0 and self.units(SCV)[0]
                 if scv:
                     await self.do(scv(EFFECT_REPAIR, structure))
 

@@ -254,7 +254,13 @@ class MyBot(sc2.BotAI):
 
             if self.units(STARPORT).amount < 2 and self.already_pending(STARPORT) < 2:
                 if self.can_afford(STARPORT):
-                    await self.build(STARPORT, near=cc.position.towards(self.game_info.map_center, 6).random_on_distance(9))
+                    async def techlabfits(pos):
+                        print(max(pos.neighbors8))
+                        return await self.can_place(SUPPLYDEPOT, max(pos.neighbors8))
+                    pos = cc.position.random_on_distance(10)
+                    while not await techlabfits(pos):
+                        pos = cc.position.random_on_distance(10)
+                    await self.build(STARPORT, near=pos)
                     return
 
         for sp in self.units(STARPORT).ready:

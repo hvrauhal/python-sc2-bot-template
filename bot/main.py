@@ -58,6 +58,14 @@ class MyBot(sc2.BotAI):
         if self.can_afford(SCV) and self.workers.amount < 22 and cc.noqueue:
             await self.do(cc.train(SCV))
 
+
+        ## Repair broken structures
+        for structure in self.units().structure.ready: 
+            if structure.health < structure.health_max:
+                scv = self.units(SCV).idle[0]
+                if scv:
+                    await self.do(scv(EFFECT_REPAIR, structure))
+
         if self.units(FUSIONCORE).exists and self.can_afford(BATTLECRUISER):
             for sp in self.units(STARPORT):
                 if sp.has_add_on and sp.noqueue:

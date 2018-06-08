@@ -106,8 +106,8 @@ class MyBot(sc2.BotAI):
         if self.units(MARINE).amount > 0 and self.units(BUNKER).ready.exists:
             forces = self.units(MARINE)
             bunkers = self.units(BUNKER).ready
-            for unit in forces.idle:
-                await self.do(unit.move(bunkers[0]))
+            for marine in forces.idle:
+                await self.do(bunkers[0](LOAD_BUNKER, marine))
 
         if self.units(SUPPLYDEPOT).exists:
             if not self.units(BARRACKS).exists:

@@ -6,6 +6,7 @@ from sc2 import Race, Difficulty
 from sc2.constants import *
 from sc2.player import Bot, Computer
 from sc2.player import Human
+from sc2.position import Point2
 
 class MyBot(sc2.BotAI):
     with open(Path(__file__).parent / "../botinfo.json") as f:
@@ -59,9 +60,39 @@ class MyBot(sc2.BotAI):
                         break
                     await self.do(sp.train(BATTLECRUISER))
 
+
+        #### RAMP WALL:
+        # Raise depos when enemies are nearby
+        for depo in self.units(SUPPLYDEPOT).ready:
+            for unit in self.known_enemy_units.not_structure:
+                if unit.position.to2.distance_to(depo.position.to2) < 15:
+                    break
+            else:
+                await self.do(depo(MORPH_SUPPLYDEPOT_LOWER))
+
+        # Lower depos when no enemies are nearby
+        for depo in self.units(SUPPLYDEPOTLOWERED).ready:
+            for unit in self.known_enemy_units.not_structure:
+                if unit.position.to2.distance_to(depo.position.to2) < 10:
+                    await self.do(depo(MORPH_SUPPLYDEPOT_RAISE))
+                    break
+
+        depos = [
+            Point2((max({p.x for p in d}), min({p.y for p in d})))
+            for d in self.main_base_ramp.top_wall_depos
+        ]
+
+        depo_count = (self.units(SUPPLYDEPOT) | self.units(SUPPLYDEPOTLOWERED)).amount
+
+        if self.can_afford(SUPPLYDEPOT) and not self.already_pending(SUPPLYDEPOT):
+            if depo_count >= len(depos):
+                return
+            depo = list(depos)[depo_count]
+            r = await self.build(SUPPLYDEPOT, near=depo, max_distance=2, placement_step=1)
         elif self.supply_left < 3:
             if self.can_afford(SUPPLYDEPOT):
                 await self.build(SUPPLYDEPOT, near=cc.position.towards(self.game_info.map_center, 8))
+        #### ^^^ DEPOTS WALL
 
         if self.units(SUPPLYDEPOT).exists:
             if not self.units(BARRACKS).exists:

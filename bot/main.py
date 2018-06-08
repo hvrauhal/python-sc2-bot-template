@@ -155,7 +155,7 @@ class MyBot(sc2.BotAI):
                 return
 
         turret_count = self.units(MISSILETURRET).amount
-        if bunkers.amount > turret_count and self.can_afford(MISSILETURRET) and not self.already_pending(MISSILETURRET):
+        if bunkers.amount >= bunkers_to_build and self.can_afford(MISSILETURRET) and not self.already_pending(MISSILETURRET):
             if turret_count < turrets_to_build:
                 await self.build(MISSILETURRET, near=bunkers[turret_count], max_distance=10)
                 return

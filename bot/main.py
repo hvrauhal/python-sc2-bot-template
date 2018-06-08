@@ -128,7 +128,7 @@ class MyBot(sc2.BotAI):
                             if factory.add_on_tag == 0:
                                 await self.do(factory.build(FACTORYTECHLAB))
                     
-                    if self.units(STARPORT).amount < 2 and self.already_pending(FACTORY) < 2:
+                    if self.units(STARPORT).amount < 2 and self.already_pending(STARPORT) < 2:
                         if self.can_afford(STARPORT):
                             await self.build(STARPORT, near=cc.position.towards(self.game_info.map_center, 10).random_on_distance(8))
 

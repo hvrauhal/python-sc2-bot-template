@@ -146,6 +146,8 @@ class MyBot(sc2.BotAI):
                 return
        #### ^^^ DEPOTS WALL
 
+        engineering_bay = self.units(ENGINEERINGBAY)
+
         if self.units(BARRACKS).ready.exists and self.can_afford(MARINE) and self.units(MARINE).amount < marines_to_train:
             for br in self.units(BARRACKS):
                 if br.noqueue:
@@ -161,7 +163,7 @@ class MyBot(sc2.BotAI):
                 return
 
         turret_count = self.units(MISSILETURRET).amount
-        if bunkers.amount >= bunkers_to_build and self.can_afford(MISSILETURRET) and not self.already_pending(MISSILETURRET):
+        if bunkers.amount >= bunkers_to_build and engineering_bay.ready.exists and self.can_afford(MISSILETURRET) and not self.already_pending(MISSILETURRET):
             if turret_count < turrets_to_build:
                 await self.build(MISSILETURRET, near=bunkers[randrange(0, bunkers_to_build)], max_distance=5)
                 return
@@ -194,42 +196,11 @@ class MyBot(sc2.BotAI):
                         await self.do(worker.build(REFINERY, vg))
                         return
 
-            f = self.units(ENGINEERINGBAY)
-            if not f.exists and self.units(BARRACKS).exists:
+            if not engineering_bay.exists and self.units(BARRACKS).exists:
                 print("No engineering bay")
                 if self.can_afford(ENGINEERINGBAY) and self.already_pending(ENGINEERINGBAY) < 1:
                     await self.build(ENGINEERINGBAY, near=cc.position.towards(self.game_info.map_center, 10))
                     return
-            elif f.ready.exists:
-                # Ugly hack for upgrading with only one engineering bay
-                for f_bay in f:
-                    global upgrade_level
-                    global upgrades
-                    if upgrade_level == 1:
-                        if self.can_afford(ENGINEERINGBAYRESEARCH_TERRANINFANTRYWEAPONSLEVEL1) and ENGINEERINGBAYRESEARCH_TERRANINFANTRYWEAPONSLEVEL1 not in upgrades:
-                            print("Upgrading weapons")
-                            await self.chat_send("RAWR")
-                            upgrades.add(ENGINEERINGBAYRESEARCH_TERRANINFANTRYWEAPONSLEVEL1)
-                            await self.do(f_bay(ENGINEERINGBAYRESEARCH_TERRANINFANTRYWEAPONSLEVEL1))
-                            return
-                        if self.can_afford(ENGINEERINGBAYRESEARCH_TERRANINFANTRYARMORLEVEL1) and ENGINEERINGBAYRESEARCH_TERRANINFANTRYARMORLEVEL1 not in upgrades:
-                            print("Booyeah!")
-                            await self.chat_send("Booyeah!")
-                            upgrades.add(ENGINEERINGBAYRESEARCH_TERRANINFANTRYARMORLEVEL1)
-                            await self.do(f_bay(ENGINEERINGBAYRESEARCH_TERRANINFANTRYARMORLEVEL1))
-                            return
-                        if self.can_afford(RESEARCH_HISECAUTOTRACKING) and RESEARCH_HISECAUTOTRACKING not in upgrades:
-                            print("Awww yeah")
-                            await self.chat_send("Aww yeah")
-                            upgrades.add(RESEARCH_HISECAUTOTRACKING)
-                            await self.do(f_bay(RESEARCH_HISECAUTOTRACKING))
-                            return
-                        if self.can_afford(RESEARCH_TERRANSTRUCTUREARMORUPGRADE) and RESEARCH_TERRANSTRUCTUREARMORUPGRADE not in upgrades:
-                            print("Woop woop")
-                            await self.chat_send("Woop woop")
-                            upgrades.add(RESEARCH_TERRANSTRUCTUREARMORUPGRADE)
-                            await self.do(f_bay(RESEARCH_TERRANSTRUCTUREARMORUPGRADE))
-                            return
 
             f = self.units(FACTORY)
             if not f.exists:
@@ -241,7 +212,7 @@ class MyBot(sc2.BotAI):
                     pos = cc.position.random_on_distance(10)
                     while not await techlabfits(pos):
                         pos = cc.position.random_on_distance(10)
- 
+
                     await self.build(FACTORY, near=pos)
                     return
             elif f.ready.exists:
@@ -250,7 +221,6 @@ class MyBot(sc2.BotAI):
                         if factory.add_on_tag == 0:
                             print("NOW BUILDING THE FACTORYTECHLAB FOR REAL!!!!")
                             await self.do(factory.build(FACTORYTECHLAB))
-                            return
 
             if self.units(STARPORT).amount < 2 and self.already_pending(STARPORT) < 2:
                 if self.can_afford(STARPORT):
@@ -261,12 +231,10 @@ class MyBot(sc2.BotAI):
                     while not await techlabfits(pos):
                         pos = cc.position.random_on_distance(10)
                     await self.build(STARPORT, near=pos)
-                    return
 
         for sp in self.units(STARPORT).ready:
             if sp.add_on_tag == 0:
                 await self.do(sp.build(STARPORTTECHLAB))
-                return
 
         if self.units(STARPORT).ready.exists:
             if self.can_afford(FUSIONCORE) and not self.units(FUSIONCORE).exists and self.already_pending(FUSIONCORE) < 1:
@@ -288,8 +256,7 @@ class MyBot(sc2.BotAI):
                 siege_tanks[s.tag] = 'sieged'
                 return
             elif tank_status == 'sieger':
-                await self.do(s.move(cc.position.towards(self.game_info.map_center, 15).random_on_distance(5
-)))
+                await self.do(s.move(cc.position.towards(self.game_info.map_center, 15).random_on_distance(5)))
                 siege_tanks[s.tag] = 'moving_to_siege'
                 return
             elif tank_status == 'moving_to_siege':
@@ -308,3 +275,34 @@ class MyBot(sc2.BotAI):
         for scv in self.units(SCV).idle:
             await self.do(scv.gather(self.state.mineral_field.closest_to(cc)))
             return
+
+        if engineering_bay.ready.exists:
+            # Ugly hack for upgrading with only one engineering bay
+            for f_bay in engineering_bay:
+                global upgrade_level
+                global upgrades
+                if upgrade_level == 1:
+                    if self.can_afford(ENGINEERINGBAYRESEARCH_TERRANINFANTRYWEAPONSLEVEL1) and ENGINEERINGBAYRESEARCH_TERRANINFANTRYWEAPONSLEVEL1 not in upgrades:
+                        print("Upgrading weapons")
+                        await self.chat_send("RAWR")
+                        upgrades.add(ENGINEERINGBAYRESEARCH_TERRANINFANTRYWEAPONSLEVEL1)
+                        await self.do(f_bay(ENGINEERINGBAYRESEARCH_TERRANINFANTRYWEAPONSLEVEL1))
+                        return
+                    if self.can_afford(ENGINEERINGBAYRESEARCH_TERRANINFANTRYARMORLEVEL1) and ENGINEERINGBAYRESEARCH_TERRANINFANTRYARMORLEVEL1 not in upgrades:
+                        print("Booyeah!")
+                        await self.chat_send("Booyeah!")
+                        upgrades.add(ENGINEERINGBAYRESEARCH_TERRANINFANTRYARMORLEVEL1)
+                        await self.do(f_bay(ENGINEERINGBAYRESEARCH_TERRANINFANTRYARMORLEVEL1))
+                        return
+                    if self.can_afford(RESEARCH_HISECAUTOTRACKING) and RESEARCH_HISECAUTOTRACKING not in upgrades:
+                        print("Awww yeah")
+                        await self.chat_send("Aww yeah")
+                        upgrades.add(RESEARCH_HISECAUTOTRACKING)
+                        await self.do(f_bay(RESEARCH_HISECAUTOTRACKING))
+                        return
+                    if self.can_afford(RESEARCH_TERRANSTRUCTUREARMORUPGRADE) and RESEARCH_TERRANSTRUCTUREARMORUPGRADE not in upgrades:
+                        print("Woop woop")
+                        await self.chat_send("Woop woop")
+                        upgrades.add(RESEARCH_TERRANSTRUCTUREARMORUPGRADE)
+                        await self.do(f_bay(RESEARCH_TERRANSTRUCTUREARMORUPGRADE))
+                        return

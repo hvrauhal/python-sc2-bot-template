@@ -140,6 +140,11 @@ class MyBot(sc2.BotAI):
             if self.can_afford(FUSIONCORE) and not self.units(FUSIONCORE).exists and self.already_pending(FUSIONCORE) < 1:
                 await self.build(FUSIONCORE, near=cc.position.towards(self.game_info.map_center, 8))
 
+        if self.units(FACTORY).ready.exists:
+            for factory in self.units(FACTORY).ready:
+                if factory.has_add_on and self.can_afford(SIEGETANK) and factory.noqueue and self.units(SIEGETANK).amount < 6:
+                    await self.do(factory.train(SIEGETANK))
+
         for a in self.units(REFINERY):
             if a.assigned_harvesters < a.ideal_harvesters:
                 w = self.workers.closer_than(20, a)

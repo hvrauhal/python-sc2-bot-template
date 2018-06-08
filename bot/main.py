@@ -24,7 +24,7 @@ tanks_to_train = 5
 
 cruisers_to_attack = 3
 
-attack_interval = 50
+attack_interval = 10
 
 class MyBot(sc2.BotAI):
     with open(Path(__file__).parent / "../botinfo.json") as f:

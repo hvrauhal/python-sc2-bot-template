@@ -150,7 +150,7 @@ class MyBot(sc2.BotAI):
             if not f.exists:
                 if self.can_afford(FACTORY) and self.already_pending(FACTORY) < 1:
                     print("Building initial factory")
-                    await self.build(FACTORY, near=cc.position.random_on_distance(4))
+                    await self.build(FACTORY, near=cc.position.random_on_distance(10))
             elif f.ready.exists:
                 print("some FACTORY ready and exists")
                 if self.can_afford(FACTORYTECHLAB) and not self.already_pending(FACTORYTECHLAB):

@@ -132,12 +132,12 @@ class MyBot(sc2.BotAI):
                 f = self.units(FACTORY)
                 if not f.exists:
                     if self.can_afford(FACTORY) and self.already_pending(FACTORY) < 1:
-                        await self.build(FACTORY, near=cc.position.towards(self.game_info.map_center, 6).random_on_distance(8))
+                        await self.build(FACTORY, near=cc.position.towards(self.game_info.map_center, 8).random_on_distance(8))
                 elif f.ready.exists:
                     if self.can_afford(FACTORYTECHLAB):
                         for factory in self.units(FACTORY).ready:
-                            if not factory.has_add_on:
-                                await self.build(FACTORYTECHLAB, near=factory, max_distance=10)
+                            if factory.add_on_tag == 0:
+                                await self.do(factory.build(FACTORYTECHLAB))
 
                 if self.units(STARPORT).amount < 2 and self.already_pending(STARPORT) < 2:
                     if self.can_afford(STARPORT):
@@ -149,7 +149,7 @@ class MyBot(sc2.BotAI):
 
         if self.units(STARPORT).ready.exists:
             if self.can_afford(FUSIONCORE) and not self.units(FUSIONCORE).exists and self.already_pending(FUSIONCORE) < 1:
-                await self.build(FUSIONCORE, near=cc.position.towards(self.game_info.map_center, 8))
+                await self.build(FUSIONCORE, near=cc.position.towards(self.game_info.map_center, 6))
 
         if self.units(FACTORY).ready.exists:
             for factory in self.units(FACTORY).ready:

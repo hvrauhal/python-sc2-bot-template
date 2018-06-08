@@ -96,7 +96,7 @@ class MyBot(sc2.BotAI):
                 await self.build(BUNKER, near=depos[bunker_count], max_distance=5)
         #### ^^^ DEPOTS WALL
 
-        if iteration % 3 == 0 and self.units(BARRACKS).exists and self.can_afford(MARINE) and self.units(MARINE).amount < 10:
+        if self.units(BARRACKS).exists and self.can_afford(MARINE) and self.units(MARINE).amount < 10:
             for br in self.units(BARRACKS):
                 if br.noqueue:
                     if not self.can_afford(MARINE):

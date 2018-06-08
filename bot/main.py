@@ -104,6 +104,7 @@ class MyBot(sc2.BotAI):
                     await self.build(SUPPLYDEPOT, near=depos_to_build[0], max_distance=2, placement_step=1)
             elif self.supply_left < 3:
                 await self.build(SUPPLYDEPOT, near=cc.position.towards(self.game_info.map_center, 8))
+                return
        #### ^^^ DEPOTS WALL
 
         if self.units(BARRACKS).exists and self.can_afford(MARINE) and self.units(MARINE).amount < 10:
@@ -171,8 +172,9 @@ class MyBot(sc2.BotAI):
                 if self.can_afford(FACTORYTECHLAB) and not self.already_pending(FACTORYTECHLAB):
                     for factory in self.units(FACTORY).ready:
                         if factory.add_on_tag == 0:
+                            print("NOW BUILDING THE FACTORYTECHLAB FOR REAL!!!!")
                             await self.do(factory.build(FACTORYTECHLAB))
-                            break
+                            return
 
             if self.units(STARPORT).amount < 2 and self.already_pending(STARPORT) < 2:
                 if self.can_afford(STARPORT):

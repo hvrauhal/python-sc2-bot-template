@@ -137,7 +137,7 @@ class MyBot(sc2.BotAI):
                 await self.do(sp.build(STARPORTTECHLAB))
 
         if self.units(STARPORT).ready.exists:
-            if self.can_afford(FUSIONCORE) and not self.units(FUSIONCORE).exists:
+            if self.can_afford(FUSIONCORE) and not self.units(FUSIONCORE).exists and self.already_pending(FUSIONCORE) < 1:
                 await self.build(FUSIONCORE, near=cc.position.towards(self.game_info.map_center, 8))
 
         for a in self.units(REFINERY):

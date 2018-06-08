@@ -130,6 +130,16 @@ class MyBot(sc2.BotAI):
                 if bunker._proto.cargo_space_taken < bunker._proto.cargo_space_max:
                     await self.do(bunkers[0](LOAD_BUNKER, idle_marine))
 
+        if self.units(MARINE).idle.amount >= 5:
+            target = self.select_target()
+            forces = self.units(MARINE)
+            if (iteration//30) % 10 == 0:
+                for unit in forces:
+                    await self.do(unit.attack(target))
+            else:
+                for unit in forces.idle:
+                    await self.do(unit.attack(target))
+
         if self.units(SUPPLYDEPOT).exists:
             if not self.units(BARRACKS).exists:
                 if self.can_afford(BARRACKS):
